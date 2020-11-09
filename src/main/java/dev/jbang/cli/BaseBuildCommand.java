@@ -109,6 +109,8 @@ public abstract class BaseBuildCommand extends BaseScriptCommand {
 				script.setBuildJdk(
 						JavaUtil.parseJavaVersion(jf.getManifest().getMainAttributes().getValue(Script.BUILD_JDK)));
 			}
+		} else {
+			script.collectSourcesRecursively();
 		}
 
 		boolean nativeBuildRequired = nativeImage && !getImageName(outjar).exists();
