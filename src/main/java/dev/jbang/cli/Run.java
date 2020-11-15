@@ -50,9 +50,16 @@ public class Run extends BaseBuildCommand {
 			enableInsecure();
 		}
 
-		script = prepareArtifacts(prepareScript(scriptOrFile, userParams, properties, dependencies, classpaths, fresh));
+		File nativeFile = getImageName(scriptOrFile);
+		String cmdline;
+		if (nativeImage && nativeFile.exists()) {
+			cmdline = nativeFile.toString();
+		} else {
+			script = prepareArtifacts(
+					prepareScript(scriptOrFile, userParams, properties, dependencies, classpaths, fresh));
+			cmdline = generateCommandLine(script);
+		}
 
-		String cmdline = generateCommandLine(script);
 		debug("run: " + cmdline);
 		out.println(cmdline);
 

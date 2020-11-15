@@ -334,6 +334,20 @@ public abstract class BaseBuildCommand extends BaseScriptCommand {
 		}
 	}
 
+	protected File getImageName(String entrypoint) throws IOException {
+		File entryFile = new File(entrypoint);
+		File baseDir = Settings.getCacheDir(Settings.CacheClass.jars).toFile();
+		File tmpJarDir = new File(baseDir, entryFile.getName() +
+				"." + Util.getStableID(entryFile));
+
+		File outjar = new File(tmpJarDir.getParentFile(), tmpJarDir.getName() + ".jar");
+		if (Util.isWindows()) {
+			return new File(outjar.toString() + ".exe");
+		} else {
+			return new File(outjar.toString() + ".bin");
+		}
+	}
+
 	static public String findMainClass(Path base, Path classfile) {
 		StringBuilder mainClass = new StringBuilder(classfile.getFileName().toString().replace(".class", ""));
 		while (!classfile.getParent().equals(base)) {
