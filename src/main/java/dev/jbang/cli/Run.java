@@ -2,6 +2,8 @@ package dev.jbang.cli;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,7 @@ import org.apache.commons.text.StringEscapeUtils;
 
 import dev.jbang.ExitException;
 import dev.jbang.Script;
+import dev.jbang.ScriptCache;
 import dev.jbang.Util;
 
 import picocli.CommandLine;
@@ -50,14 +53,25 @@ public class Run extends BaseBuildCommand {
 			enableInsecure();
 		}
 
-		File nativeFile = getImageName(scriptOrFile);
+		ScriptCache scriptCache = ScriptCache.getScriptCache(scriptOrFile);
 		String cmdline;
-		if (nativeImage && nativeFile.exists()) {
-			cmdline = nativeFile.toString();
+		if (!fresh && ((nativeImage && scriptCache.getNativeImagePath() != null) ||
+				(!nativeImage && scriptCache.getJarPath() != null && scriptCache.getRunCommandPath() != null))) {
+			if (nativeImage) {
+				cmdline = scriptCache.getNativeImagePath().toString();
+			} else {
+				cmdline = new String(Files.readAllBytes(scriptCache.getRunCommandPath()));
+			}
 		} else {
 			script = prepareArtifacts(
 					prepareScript(scriptOrFile, userParams, properties, dependencies, classpaths, fresh));
 			cmdline = generateCommandLine(script);
+			if (!nativeImage && script.getJar() != null) {
+				File runCmd = new File(script.getJar().toString() + ".run");
+				try (PrintWriter pw = new PrintWriter(runCmd)) {
+					pw.println(cmdline);
+				}
+			}
 		}
 
 		debug("run: " + cmdline);

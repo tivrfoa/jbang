@@ -857,4 +857,10 @@ public class Util {
 		return Optional.empty();
 	}
 
+	public static Path getFirstFileInURLCache(String entrypoint) throws IOException {
+		entrypoint = swizzleURL(entrypoint);
+		Path urlCache = getUrlCache(entrypoint);
+		return getFirstFile(urlCache);
+	}
+
 }
